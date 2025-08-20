@@ -4,18 +4,10 @@
 FROM node:18-alpine AS build
 WORKDIR /usr/src/app
 
-# Accept build arguments
-ARG VITE_WEATHER_API_KEY
-ARG VITE_WEATHER_API_URL=https://api.openweathermap.org/data/2.5
-ARG VITE_APP_NAME="Weather Dashboard"
-
-# Set environment variables from build args
-ENV VITE_WEATHER_API_KEY=$VITE_WEATHER_API_KEY
-ENV VITE_WEATHER_API_URL=$VITE_WEATHER_API_URL
-ENV VITE_APP_NAME=$VITE_APP_NAME
-
 # Copy package files for better layer caching
 COPY package*.json ./
+
+# Install ALL dependencies (including devDependencies) for building
 RUN npm ci && npm cache clean --force
 
 # Copy source code and build
@@ -36,6 +28,8 @@ COPY . ./
 # Create non-root user for security
 RUN addgroup -g 1001 -S nodejs && \
     adduser -S frontend -u 1001 -G nodejs
+
+# Change ownership of the app directory
 RUN chown -R frontend:nodejs /usr/src/app
 USER frontend
 
