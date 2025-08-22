@@ -1,0 +1,97 @@
+TEAMS NOTES OPERATION:
+T)684058964480uy
+klaudius@andalsoftware.com
+
+creating a git from already exixsting project file (local)
+https://claude.ai/share/40469b16-c856-497e-95b7-cb01ad149c8e
+cd ~\documents -> cd Development\weather-dashboard (namafile)
+
+Telecom:
+banu
+Klaudiusbanu@007
+
+version: teleport-v17.7.1-windows-amd64-bin (for vm version)
+kubectl port-forward svc/frontend 8080:80
+tsh ssh -L 8081:localhost:8080 manage@VM-ONBOARDING-DEVOPS (forward pods forntend)
+virtmgmt.msc
+
+https://github.com/patroni/patroni/tree/master/kubernetes -> next path learning
+PV dan PVC, storage class until distrubuted --> new path learning
+RBD dan Cephfs
+
+akses VM  (dev_onboarding):
+ssh dev-banu@172.17.153.91
+tsh ssh manage@VM-ONBOARDING-DEVOPS
+ssh -L 8081:localhost:8080 manage@VM-ONBOARDING-DEVOPS.teleport-cluster.test.andalsoftware.com
+tsh ssh -L 8081:192.168.24.241:80 manage@VM-ONBOARDING-DEVOPS
+
+patronidemo-549574586-wd2p8
+
+docker secret userame dan token:
+https://app.docker.com/accounts/carloz02/settings/account-information
+https://keplerai-mentalhealth-llm.streamlit.app/
+
+Basic prompt:
+cat: melihat is file dalam terminal
+nano: membuat file baru dalam terminal
+docker start (your project name): untuk melakukan running dari container docker yang sudah ada
+docker-compose up: for using port local 8080
+docker-compose down: Stop and remove services
+
+docker network ls
+docker port container_name
+mkdir -p or mkdir folder_name: Create the directory + -p directory structure
+kubectl describe service frontend
+
+kubectl get node vm-replika-k8s-ak-prod -o jsonpath='{.status.addresses[?(@.type=="InternalIP")].address}'
+echo ""
+
+================ Basic prompt for looking deffrent target =======================================
+
+++++++++++++ Scan avabilabelity ip addres+++++++++++++++++
+# Based on your node IP, scan appropriate range
+node_ip=$(kubectl get node vm-replika-k8s-ak-prod -o jsonpath='{.status.addresses[?(@.type=="InternalIP")].address}')
+network=$(echo $node_ip | cut -d. -f1-3)
+
+echo "Node IP: $node_ip"
+echo "Scanning network: ${network}.240-250 for MetalLB"
+
+for i in {240..250}; do
+    ip="${network}.$i"
+    timeout 2 ping -c 1 $ip >/dev/null 2>&1 && echo "$ip USED" || echo "$ip FREE"
+done
+
+++++++++++++  +++++++++++++++++
+kubectl get pods --show-labels | grep frontend or kubectl get service frontend -o wide
+
+
+# Create MetalLB IP pool configuration
+cat > metallb-ippool.yaml << EOF
+apiVersion: metallb.io/v1beta1
+kind: IPAddressPool
+metadata:
+  name: frontend-pool
+  namespace: metallb-system
+spec:
+  addresses:
+  - 192.168.24.241-192.168.24.243
+---
+apiVersion: metallb.io/v1beta1
+kind: L2Advertisement
+metadata:
+  name: frontend-advertisement
+  namespace: metallb-system
+spec:
+  ipAddressPools:
+  - frontend-pool
+EOF
+
+# Apply the configuration
+kubectl apply -f metallb-ippool.yaml
+
+
+pvc-b9c42305-b093-487e-b593-2bc2e065bfe1
+
+manage@VM-ONBOARDING-DEVOPS:~$ kubectl get pvc --watch
+NAME           STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS                  AGE
+my-first-pvc   Bound    pvc-afbc9905-2b7f-4151-8f66-364d026953a7   2Gi        RWO            patroni-performance-storage   30s
